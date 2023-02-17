@@ -12,7 +12,7 @@ data = Bot_Data()
 async def view_items(data,message):
     items = data.item_list
     index = 0
-    if items != None:
+    if items != {}:
         for item in items:
             text = f"{item['name']} \n Цена: {item['price']} \n "
             await message.answer(text,keyboard=data.kayboards.select_inline_keyboard(item_index=index))
