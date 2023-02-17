@@ -168,6 +168,8 @@ async def check_pay(message: Message):
             await message.answer(data.answer_text)
             if data.count_order.get("change") == True:
                 await message.answer("Выполняю перепривязку аккаунта")
+                Func_Bot.login_account_function(data.count_order.get("market"), data.current_driver,
+                                                    data.log_pass[0], data.log_pass[1])
                 data.count_order.set("wait_user_email",True)
                 await message.answer("Введите вашу почту:")
         else:
@@ -241,6 +243,7 @@ async def all_message(message: Message):
 
         if data.count_order.get("wait_user_email") == True:
             data.count_order.set("wait_user_email",False)
+
 
 
 

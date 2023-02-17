@@ -328,6 +328,30 @@ def buy_accaunt(market, driver, sindex, item_list,data):
         buy_accaunt(market,driver,sindex,item_list,data)
 
 
+def login_account_social_club(driver,login,password):
+    try:
+        driver.execute_script("window.open('');")
+        driver.switch_to.window(driver.window_handles[1])
+        driver.get("https://signin.rockstargames.com/signin/user-form?cid=socialclub")
+        login_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#textInput__59")))
+        password_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"##textInput__64")))
+        login_btn = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#app-page > div:nth-child(2) > div:nth-child(1) > div > div > form > fieldset.loginform__submitField__NdeFI > div > button")))
+        login_input.send_keys(login)
+        password_input.send_keys(password)
+        login_btn.click()
+        time.sleep(10)
+        if check_exists_by_xpath(driver,'//*[@id="textInput__176"]'):
+            driver.switch_to.window(driver.window_handles[0])
+            get_code_btn = driver.find_element(By.CSS_SELECTOR,"")
+            get_code_btn.click()
+            code_label = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR," ")))
+            code = code_label.text
+            driver.switch_to.window(driver.window_handles[1])
+            driver.find_element(By.XPATH,'//*[@id="textInput__176"]').send_keys(code)
+            driver.find_element(By.CSS_SELECTOR,"#app-page > div:nth-child(2) > div > div > div:nth-child(5) > div > button").click()
+    except:
+        traceback.print_exc()
+
 
 class Func_Bot():
     def start_ordering_processing(data,driver):
@@ -382,6 +406,10 @@ class Func_Bot():
             data.answer_text = f"Данные вашей учетной записи:\nЛогин: {data.log_pass[0]} \nПароль: {data.log_pass[1]}"
 
 
-    def reconnect_account_function(market,driver,login,password):
+    def login_account_function(market,driver,login,password):
         if market == "Social club":
-            pass
+            process = Thread(target=login_account_social_club,args=(driver,login,password))
+            process.start()
+            process.join()
+            return
+
