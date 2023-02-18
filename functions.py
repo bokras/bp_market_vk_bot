@@ -61,7 +61,7 @@ def search_accaunt(data, driver,market,game,change,podpiska,long):
         elif market == "epicgames":
             url_response = f"https://lzt.market/epicgames/?pmin=10&title={game}&change_email=yes&order_by=price_to_up"
         elif market == "socialclub":
-            url_response = f"https://lzt.market/socialclub/?title={game}&order_by=price_to_up"
+            url_response = f"https://lzt.market/socialclub/?{game}=on&order_by=price_to_up"
         elif market == "uplay":
             url_response = f"https://lzt.market/uplay/?pmin=10&title={game}&email_type[]=autoreg&order_by=price_to_up"
         elif game == "More.tv":
@@ -144,8 +144,8 @@ def one_step_order_processing(data, driver,type,game,change,market,podpiska,long
 
 
 def select_account(data,market,items,index,driver):
-    attamp = 0
     try:
+        print("попытка: ",data.attamp)
         message_text = f""
         acc_url = items[index]['url']
         print(acc_url, " url")
@@ -268,11 +268,12 @@ def select_account(data,market,items,index,driver):
         data.answer_text = message_text
     except Exception as ex:
         traceback.print_exc()
-        attamp += 1
-        select_account(data,market,items,index,driver)
-        if attamp == 10:
-            attamp = 0
+        data.attamp += 1
+        if data.attamp <= 10:
+            select_account(data, market, items, index, driver)
+        else:
             data.answer_text = "Неудалось собрать информацию о даннам аккаунте, выберите другой"
+            data.attamp = 0
             return
 
 
@@ -307,7 +308,7 @@ def add_money_to_lolz(driver,item_list,sindex):
 
 def buy_accaunt(market, driver, sindex, item_list,data):
     try:
-        buy_btn = driver.find_element(By.CSS_SELECTOR,"#content > div > div > div > div > div.market--titleBar.market--spec--titleBar > div.AfterPurchaseContainer > div.mn-30-0-0.buttons > a.button.primary.InlinePurchase.OverlayTrigger.DisableButton.marketViewItem--buyButton")
+        buy_btn = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#content > div > div > div > div > div.market--titleBar.market--spec--titleBar > div.AfterPurchaseContainer > div.mn-30-0-0.buttons > a.button.primary.InlinePurchase.OverlayTrigger.DisableButton.marketViewItem--buyButton")))
         buy_btn.click()
         driver.execute_script("window.open('');")
         driver.switch_to.window(driver.window_handles[1])
@@ -321,7 +322,8 @@ def buy_accaunt(market, driver, sindex, item_list,data):
         sickret_word_input.send_keys(sikret_word)
         confirm_buy_btn = driver.find_element(By.CSS_SELECTOR,"body > div.modal.fade.in > div > div > form > div.SA--bottom > input.button.primary.mn-15-0-0.OverlayTrigger")
         confirm_buy_btn.click()
-        log_pass_out = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"loginData--login_and_password")))
+        driver.get("https://lzt.market/46217655/")
+        log_pass_out = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#loginData--login_and_password")))
         data.log_pass = log_pass_out.text.split(":")
     except:
         traceback.print_exc()
@@ -333,8 +335,8 @@ def login_account_social_club(driver,login,password):
         driver.execute_script("window.open('');")
         driver.switch_to.window(driver.window_handles[1])
         driver.get("https://signin.rockstargames.com/signin/user-form?cid=socialclub")
-        login_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#textInput__59")))
-        password_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"##textInput__64")))
+        login_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/div/div/div[1]/div[2]/div[1]/div/div/form/fieldset[1]/span/input[@name="email"]')))
+        password_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.XPATH,'/html/body/div[1]/div/div/div[1]/div[2]/div[1]/div/div/form/fieldset[2]/span[1]/span/input[@name="password"]')))
         login_btn = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#app-page > div:nth-child(2) > div:nth-child(1) > div > div > form > fieldset.loginform__submitField__NdeFI > div > button")))
         login_input.send_keys(login)
         password_input.send_keys(password)
@@ -365,6 +367,10 @@ class Func_Bot():
 
         if market == "epicgames" and game == "GTA V":
             game = "Grand Theft Auto V"
+        elif market == "socialclub" and game == "GTA V":
+            game = "gtav"
+        elif market == "socialclub" and game == "Red Dead Redemption 2":
+            game = "rdr2"
         change = data.count_order.get("change")
         process = Thread(target=one_step_order_processing,args=(data, driver,tipe,game,change,market,podpiska,long))
         process.start()
@@ -407,7 +413,8 @@ class Func_Bot():
 
 
     def login_account_function(market,driver,login,password):
-        if market == "Social club":
+        print(market)
+        if market == "Social Club":
             process = Thread(target=login_account_social_club,args=(driver,login,password))
             process.start()
             process.join()

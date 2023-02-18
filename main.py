@@ -30,6 +30,9 @@ async def view_items(data,message):
 async def hi_handler(message: Message):
     global data
     await message.answer("Привет, чтобы купить аккаунт нажми кнопку ниже",keyboard=data.kayboards.main_menu_keyboard)
+    if data.current_driver:
+        data.current_driver.close()
+        data.current_driver = None
     data.count_order.delete("start")
     data.count_order.delete("wait_user_email")
     data.count_order.delete("type")
@@ -40,6 +43,7 @@ async def hi_handler(message: Message):
     data.count_order.delete("uplay_activity")
     data.count_order.delete("origin_activity_date")
     data.item_list = {}
+    data.attamp = 0
 
 @bot.on.private_message(text="Купить")
 async def start_buy(message: Message):
@@ -168,8 +172,7 @@ async def check_pay(message: Message):
             await message.answer(data.answer_text)
             if data.count_order.get("change") == True:
                 await message.answer("Выполняю перепривязку аккаунта")
-                Func_Bot.login_account_function(data.count_order.get("market"), data.current_driver,
-                                                    data.log_pass[0], data.log_pass[1])
+                Func_Bot.login_account_function(data.count_order.get("market"), data.current_driver,data.log_pass[0], data.log_pass[1])
                 data.count_order.set("wait_user_email",True)
                 await message.answer("Введите вашу почту:")
         else:
@@ -241,8 +244,8 @@ async def all_message(message: Message):
             Func_Bot.start_ordering_processing(data, data.current_driver)
             await view_items(data, message)
 
-        if data.count_order.get("wait_user_email") == True:
-            data.count_order.set("wait_user_email",False)
+    elif data.count_order.get("wait_user_email") == True:
+        data.count_order.set("wait_user_email",False)
 
 
 

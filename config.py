@@ -24,3 +24,4 @@ class Bot_Data():
         self.p2p = None
         self.DEBUG_IDS = ["207012171"]
         self.log_pass = []
+        self.attamp = 0
