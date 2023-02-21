@@ -5,6 +5,7 @@ from vkbottle import CtxStorage
 qiwi_api_key = "eyJ2ZXJzaW9uIjoiUDJQIiwiZGF0YSI6eyJwYXlpbl9tZXJjaGFudF9zaXRlX3VpZCI6IjlweXRvNS0wMCIsInVzZXJfaWQiOiI3OTk5ODU5NzQwMiIsInNlY3JldCI6ImEzMzUxMDUxN2ZkMWY3N2U4MTBiMDY1MDcwYzQxMDA4MGIyMmJlYmVhOGQ4OGE4NjA5YzhhYWYyM2ExNTAwMmMifX0="
 vk_bot_api_key = "vk1.a.r3noLcROF-h3hMPhWEB3a7NE4AakexlLaWmJR6puFS9DA7Y6L4ewqUHLN-joI8yNBBIHiMChmmHYrtsYauE4Jf4cUhDZL_0nqZVcoWULNTk7FkPZvj47ZoJzvltaGwLx_7o4xYHm1UluBsMcc4-BVA_vmHsmqSoOtcpH3beIkdJ6T8x2RcdSwqJE-SYHHxuwyPuuLuMBf5HR60HabzfovA"
 lolz_url = "https://lzt.market/"
+keys_url = "https://keys-ground.com/"
 qiwi_number = "9998597402"
 qiwi_password = "Bodya4832"
 sikret_word = "Программист"

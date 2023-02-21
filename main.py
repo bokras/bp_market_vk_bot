@@ -118,7 +118,7 @@ async def select_market(message: Message):
         elif data.count_order.get("type") == "Key":
             data.count_order.set("market", message.text)
             data.count_order.set("game", "not")
-            await message.answer("Какую игру вы хотите?", keyboard=data.kayboards.select_game_keyboard)
+            await message.answer('Какую игру вы хотите?', keyboard=data.kayboards.select_game_keyboard)
 
 
 @bot.on.private_message(text=["EA Play","EA Play Pro","Не важно"])
@@ -130,7 +130,7 @@ async def select_origin_activity(message:Message):
         data.count_order.set("origin_activity_date", "not")
     else:
         data.count_order.set("game", "not")
-        await message.answer("Какая игра должна быть на аккаунте?", keyboard=data.kayboards.select_game_keyboard)
+        await message.answer('Какая игра должна быть на аккаунте?', keyboard=data.kayboards.select_game_keyboard)
 
 
 
@@ -142,19 +142,31 @@ async def choose_game(message: Message):
         data.count_order.set("game","not")
         if message.text == "GTA V":
             data.count_order.set("game",message.text)
-            await message.answer(
-                "Выполнить перепривязку аккаунта на вас?\n Бот самостаятельно привяжет аккаунт к вашей почте, сменить пароль, и поможет настроить двухфакторную верификацию \n (Это дополнительная услуга +50р к стоимости аккаунта)",
-                keyboard=data.kayboards.change_user_keyboard)
-            data.count_order.set("change", None)
+            if data.count_order.get("type") == "Account":
+                await message.answer(
+                    "Выполнить перепривязку аккаунта на вас?\n Бот самостаятельно привяжет аккаунт к вашей почте, сменить пароль, и поможет настроить двухфакторную верификацию \n (Это дополнительная услуга +50р к стоимости аккаунта)",
+                    keyboard=data.kayboards.change_user_keyboard)
+                data.count_order.set("change", None)
+            elif data.count_order.get("type") == "Key":
+                await message.answer("Ищу для вас подходящий ключ...\n(Это может занять пару минут)")
+                options = uc.ChromeOptions()
+                data.current_driver = uc.Chrome(options=options)
+                Func_Bot.start_ordering_processing(data,data.current_driver)
         elif message.text == "Red Dead Redemption 2":
             data.count_order.set("game",message.text)
-            await message.answer(
-                "Выполнить перепривязку аккаунта на вас?\n Бот самостаятельно привяжет аккаунт к вашей почте, сменить пароль, и поможет настроить двухфакторную верификацию \n (Это дополнительная услуга +50р к стоимости аккаунта)",
-                keyboard=data.kayboards.change_user_keyboard)
-            data.count_order.set("change", None)
+            if data.count_order.get("type") == "Account":
+                await message.answer(
+                    "Выполнить перепривязку аккаунта на вас?\n Бот самостаятельно привяжет аккаунт к вашей почте, сменить пароль, и поможет настроить двухфакторную верификацию \n (Это дополнительная услуга +50р к стоимости аккаунта)",
+                    keyboard=data.kayboards.change_user_keyboard)
+                data.count_order.set("change", None)
+            elif data.count_order.get("type") == "Key":
+                await message.answer("Ищу для вас подходящий ключ...\n(Это может занять пару минут)")
+                options = uc.ChromeOptions()
+                data.current_driver = uc.Chrome(options=options)
+                Func_Bot.start_ordering_processing(data,data.current_driver)
         else:
             data.count_order.set("game", "not")
-            await message.answer("Введи назвоние игры:")
+            await message.answer('Введи название игры, в подобном формате: "Red Dead Redemption 2"')
             data.count_order.set("change", None)
 
 
@@ -187,10 +199,16 @@ async def all_message(message: Message):
     if data.count_order.get("start"):
         if data.count_order.get("game") == "not":
             data.count_order.set("game",message.text)
-            await message.answer(
-                "Выполнить перепривязку аккаунта на вас?\n Бот самостаятельно привяжет аккаунт к вашей почте, сменить пароль, и поможет настроить двухфакторную верификацию \n (Это дополнительная услуга +50р к стоимости аккаунта)",
-                keyboard=data.kayboards.change_user_keyboard)
-            data.count_order.set("change", None)
+            if data.count_order.get("type") == "Account":
+                await message.answer(
+                    "Выполнить перепривязку аккаунта на вас?\n Бот самостаятельно привяжет аккаунт к вашей почте, сменит пароль, и поможет настроить двухфакторную верификацию \n (Это дополнительная услуга +50р к стоимости аккаунта)",
+                    keyboard=data.kayboards.change_user_keyboard)
+                data.count_order.set("change", None)
+            elif data.count_order.get("type") == "Key":
+                await message.answer("Ищу для вас подходящий ключ...\n(Это может занять пару минут)")
+                options = uc.ChromeOptions()
+                data.current_driver = uc.Chrome(options=options)
+                Func_Bot.start_ordering_processing(data,data.current_driver)
 # Составление заказа:
         if data.count_order.get("origin_activity_date") == "not":
             data.count_order.set("origin_activity_date", message.text)

@@ -1,5 +1,6 @@
 from config import qiwi_api_key
 from config import lolz_url
+from config import keys_url
 from config import lolz_login
 from config import lolz_password
 from config import qiwi_number
@@ -34,6 +35,15 @@ def check_exists_by_class(browser,class_name):
     except NoSuchElementException:
         return False
     return True
+
+
+def check_exists_by_selector(browser,selector):
+    try:
+        browser.find_element(By.CSS_SELECTOR,selector)
+    except NoSuchElementException:
+        return False
+    return True
+
 
 
 def Login_on_lolz(driver):
@@ -136,11 +146,49 @@ def search_accaunt(data, driver,market,game,change,podpiska,long):
         search_accaunt(data,driver,market,game,change,podpiska,long)
 
 
+def search_key(data,driver,game,market):
+    try:
+        driver.get(keys_url)
+        search_btn = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#games > div.row.mt-3.mb-2 > div.col-12.col-lg-auto > div')))
+        search_btn.click()
+        market_btn = None
+        print(market)
+
+        if market == "steam":
+            market_btn = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(3) > div > div.catalog-filter-selector_list > div:nth-child(1)')))
+        elif market == "origin":
+            market_btn = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(3) > div > div.catalog-filter-selector_list > div:nth-child(2)')))
+        elif market == "uplay":
+            market_btn = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(3) > div > div.catalog-filter-selector_list > div:nth-child(3)')))
+        elif market == "socialclub":
+            market_btn = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(3) > div > div.catalog-filter-selector_list > div:nth-child(5)')))
+        elif market == "epicgames":
+            market_btn = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, '#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(3) > div > div.catalog-filter-selector_list > div:nth-child(7)')))
+
+        market_btn.click()
+        game_name_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(2) > div > div.form-group.mb-0 > input')))
+        game_name_input.send_keys(game)
+        time.sleep(5)
+        soup = BeautifulSoup(driver.page_source,"lxml")
+        table = soup.find("div", class_="tab-pane fade show active").find("div", class_="row mt-3 index-games-list-container").find("div", class_="col-6 col-md-4 col-lg-3 col-xl-2")
+
+        product_card = table.find("a", class_="product-card")
+        print(product_card.get("title"))
+
+    except:
+        traceback.print_exc()
+        search_key(data,driver,game,market)
+
+
+
 def one_step_order_processing(data, driver,type,game,change,market,podpiska,long):
     if type != "Key":
         Login_on_lolz(driver)
         search_accaunt(data, driver,market,game,change,podpiska,long)
         print("items")
+    else:
+        search_key(data,driver,game,market)
+
 
 
 def select_account(data,market,items,index,driver):
@@ -364,13 +412,14 @@ class Func_Bot():
         long = data.count_order.get("origin_activity_date")
 
 
-
         if market == "epicgames" and game == "GTA V":
             game = "Grand Theft Auto V"
         elif market == "socialclub" and game == "GTA V":
             game = "gtav"
-        elif market == "socialclub" and game == "Red Dead Redemption 2":
+        elif market in ["socialclub",None] and game == "Red Dead Redemption 2":
             game = "rdr2"
+        elif tipe == "Key" and game == "GTA V":
+            game = "Grand Theft Auto V"
         change = data.count_order.get("change")
         process = Thread(target=one_step_order_processing,args=(data, driver,tipe,game,change,market,podpiska,long))
         process.start()
