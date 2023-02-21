@@ -44,8 +44,8 @@ class Keyboards():
 
         self.buy_selected_account_keyboard = (
             Keyboard(inline=True)
-            .add(Text("Купить этот аккаунт"))
-            .add(Text("Выбрать другой"))
+            .add(Text("купить"))
+            .add(Text("посмотреть ещё"))
         )
 
         self.change_user_keyboard = (

@@ -16,6 +16,7 @@ from pyqiwip2p import QiwiP2P
 import traceback
 from threading import Thread
 import time
+import re
 
 
 
@@ -146,7 +147,7 @@ def search_accaunt(data, driver,market,game,change,podpiska,long):
         search_accaunt(data,driver,market,game,change,podpiska,long)
 
 
-def search_key(data,driver,game,market):
+def search_key(count_order,data,driver,game,market):
     try:
         driver.get(keys_url)
         search_btn = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#games > div.row.mt-3.mb-2 > div.col-12.col-lg-auto > div')))
@@ -168,16 +169,36 @@ def search_key(data,driver,game,market):
         market_btn.click()
         game_name_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#games > div.row.mt-3.index-games-list-container > div.catalog-filter.d-none.d-flex > div:nth-child(2) > div > div.form-group.mb-0 > input')))
         game_name_input.send_keys(game)
-        time.sleep(5)
+        time.sleep(10)
         soup = BeautifulSoup(driver.page_source,"lxml")
         table = soup.find("div", class_="tab-pane fade show active").find("div", class_="row mt-3 index-games-list-container").find("div", class_="col-6 col-md-4 col-lg-3 col-xl-2")
 
         product_card = table.find("a", class_="product-card")
-        print(product_card.get("title"))
+        name = product_card.get("title")
+        url = f"https://keys-ground.com{str(product_card.get('href'))}"
+        driver.get(url)
+        buy_100 = WebDriverWait(driver,20).until(EC.presence_of_element_located((By.CSS_SELECTOR,'#gameModeSwitcher')))
+        buy_100.click()
+        price_text = driver.find_element(By.CSS_SELECTOR,"#price_s").text
+        true_price = int(re.findall('\d+', price_text)[0])
+        print(true_price)
+        price = true_price + round((true_price / 100 * 25))
+        print(price)
+        goods = []
+        good = {
+            "name": name,
+            "url": url,
+            "price": price,
+            "true_price": true_price
+        }
+        goods.append(good)
+        data.item_list = goods
+        data.answer_text = f"Игра найдена\n'{name}'\n Цена: {str(price)}"
+        data.selected_item = ['0']
 
     except:
         traceback.print_exc()
-        search_key(data,driver,game,market)
+        search_key(count_order,data,driver,game,market)
 
 
 
@@ -187,7 +208,7 @@ def one_step_order_processing(data, driver,type,game,change,market,podpiska,long
         search_accaunt(data, driver,market,game,change,podpiska,long)
         print("items")
     else:
-        search_key(data,driver,game,market)
+        search_key(data.count_order,data,driver,game,market)
 
 
 
@@ -348,8 +369,9 @@ def add_money_to_lolz(driver,item_list,sindex):
         qiwi_password_input.send_keys(qiwi_password)
         login_qiwi_btn = driver.find_element(By.CSS_SELECTOR,"#PasscodeForm-Submit")
         login_qiwi_btn.click()
+        pay_qiwi_btn = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#PayButton")))
+        pay_qiwi_btn.click()
         time.sleep(5)
-        time.sleep(30)
     except:
         add_money_to_lolz(driver,item_list,sindex)
 
@@ -368,14 +390,19 @@ def buy_accaunt(market, driver, sindex, item_list,data):
         buy_btn.click()
         sickret_word_input = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.NAME,"secret_answer")))
         sickret_word_input.send_keys(sikret_word)
-        confirm_buy_btn = driver.find_element(By.CSS_SELECTOR,"body > div.modal.fade.in > div > div > form > div.SA--bottom > input.button.primary.mn-15-0-0.OverlayTrigger")
-        confirm_buy_btn.click()
-        driver.get("https://lzt.market/46217655/")
+        confirm_buy_answer = driver.find_element(By.CSS_SELECTOR,"body > div.modal.fade.in > div > div > form > div.SA--bottom > input.button.primary.mn-15-0-0.OverlayTrigger")
+        confirm_buy_answer.click()
+        confirm_btn = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"body > div.modal.fade.in > div > div > div > form.MarketItemBuy--confirmBuyForm > div.NoRequireVideoRecording.noRequireVideoRecording > input")))
+        confirm_btn.click()
         log_pass_out = WebDriverWait(driver,10).until(EC.presence_of_element_located((By.CSS_SELECTOR,"#loginData--login_and_password")))
         data.log_pass = log_pass_out.text.split(":")
     except:
         traceback.print_exc()
         buy_accaunt(market,driver,sindex,item_list,data)
+
+
+def buy_key(driver,data):
+    pass
 
 
 def login_account_social_club(driver,login,password):
@@ -459,6 +486,12 @@ class Func_Bot():
         process.join()
         if len(data.log_pass) > 0:
             data.answer_text = f"Данные вашей учетной записи:\nЛогин: {data.log_pass[0]} \nПароль: {data.log_pass[1]}"
+
+
+    def buy_key_function(driver,data):
+        process = Thread(target=buy_key,args=(driver,data))
+        process.start()
+        process.join()
 
 
     def login_account_function(market,driver,login,password):

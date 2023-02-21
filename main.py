@@ -149,9 +149,11 @@ async def choose_game(message: Message):
                 data.count_order.set("change", None)
             elif data.count_order.get("type") == "Key":
                 await message.answer("Ищу для вас подходящий ключ...\n(Это может занять пару минут)")
+                data.count_order.set("accaunt_selected", True)
                 options = uc.ChromeOptions()
                 data.current_driver = uc.Chrome(options=options)
                 Func_Bot.start_ordering_processing(data,data.current_driver)
+                await message.answer(data.answer_text, keyboard=data.kayboards.buy_selected_account_keyboard)
         elif message.text == "Red Dead Redemption 2":
             data.count_order.set("game",message.text)
             if data.count_order.get("type") == "Account":
@@ -161,9 +163,11 @@ async def choose_game(message: Message):
                 data.count_order.set("change", None)
             elif data.count_order.get("type") == "Key":
                 await message.answer("Ищу для вас подходящий ключ...\n(Это может занять пару минут)")
+                data.count_order.set("accaunt_selected", True)
                 options = uc.ChromeOptions()
                 data.current_driver = uc.Chrome(options=options)
                 Func_Bot.start_ordering_processing(data,data.current_driver)
+                await message.answer(data.answer_text,keyboard=data.kayboards.buy_selected_account_keyboard)
         else:
             data.count_order.set("game", "not")
             await message.answer('Введи название игры, в подобном формате: "Red Dead Redemption 2"')
@@ -180,13 +184,16 @@ async def check_pay(message: Message):
             data.wait_pay = False
             data.bill = None
             data.p2p = None
-            Func_Bot.buy_accaunt_function(data.count_order.get("market"),data.current_driver,int(data.selected_item[0]), data.item_list,data)
-            await message.answer(data.answer_text)
-            if data.count_order.get("change") == True:
-                await message.answer("Выполняю перепривязку аккаунта")
-                Func_Bot.login_account_function(data.count_order.get("market"), data.current_driver,data.log_pass[0], data.log_pass[1])
-                data.count_order.set("wait_user_email",True)
-                await message.answer("Введите вашу почту:")
+            if data.count_order.get("type") != "Key":
+                Func_Bot.buy_accaunt_function(data.count_order.get("market"),data.current_driver,int(data.selected_item[0]), data.item_list,data)
+                await message.answer(data.answer_text)
+                if data.count_order.get("change") == True:
+                    await message.answer("Выполняю перепривязку аккаунта")
+                    Func_Bot.login_account_function(data.count_order.get("market"), data.current_driver,data.log_pass[0], data.log_pass[1])
+                    data.count_order.set("wait_user_email",True)
+                    await message.answer("Введите вашу почту:")
+            else:
+
         else:
             await message.answer("Оплата не была проведена")
             await message.answer(f"Оплатите покупку: {data.item_list[int(data.selected_item[0])]['price']}р \n",
@@ -206,9 +213,11 @@ async def all_message(message: Message):
                 data.count_order.set("change", None)
             elif data.count_order.get("type") == "Key":
                 await message.answer("Ищу для вас подходящий ключ...\n(Это может занять пару минут)")
+                data.count_order.set("accaunt_selected", True)
                 options = uc.ChromeOptions()
                 data.current_driver = uc.Chrome(options=options)
                 Func_Bot.start_ordering_processing(data,data.current_driver)
+                await message.answer(data.answer_text, keyboard=data.kayboards.buy_selected_account_keyboard)
 # Составление заказа:
         if data.count_order.get("origin_activity_date") == "not":
             data.count_order.set("origin_activity_date", message.text)
@@ -245,13 +254,13 @@ async def all_message(message: Message):
             #Выбор аккаунта
 
     if data.count_order.get("accaunt_selected") and len(data.item_list) != 0:
-        if message.text == "Купить этот аккаунт":
+        if message.text == "купить":
             pay_info = Func_Bot.create_pay_form(data=data,message=message,base=base)
             await message.answer(pay_info[0], keyboard=data.kayboards.check_pay_keyboard(url=pay_info[1]))
 
         #Отмена выбора
 
-        elif message.text == "Выбрать другой":
+        elif message.text == "посмотреть ещё":
             data.selected_item = None
             data.count_order.set("accaunt_selected", False)
             data.current_driver.close()
